@@ -19,6 +19,8 @@ export default function Products() {
 
     useEffect(() => {
         console.log("products length", products.length)
+        console.log("products length", products[0])
+        console.log("products length", products[1])
     }, [products])
 
 
@@ -53,12 +55,23 @@ export default function Products() {
             )
         }
 
+        const handleCreate = ({ id, name, price, stock }) => {
+            console.log("product-created", id)
+            id = Number(id)
+            price = Number(price).toFixed(2)
+            stock = Number(stock)
+            console.log(id, name, price, stock)
+            setProducts(prev => [...prev, prev.unshift({ id, name, price, stock })])
+        }
+
         socket.on("product:deleted", handleDelete)
         socket.on("product:updated", handleUpdate)
+        socket.on("product:created", handleCreate)
 
         return () => {
             socket.off("product:deleted", handleDelete)
             socket.off("product:updated", handleUpdate)
+            socket.off("product:created", handleCreate)
         }
     }, [])
 
@@ -137,6 +150,9 @@ export default function Products() {
         <div className='flex flex-col justify-center items-center w-full h-full'>
             <h1 className='text-3xl font-bold underline mb-15 mt-10'>Products</h1>
             <main className="mb-15">
+                <div className="flex justify-end mr-10 mb-10">
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer" onClick={() => navigate("/create-product")}>Crear producto</button>
+                </div>
                 <div className="flex flex-wrap gap-2 overflow-y-auto h-full justify-center">
                     {
                         products.map((product) => (

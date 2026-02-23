@@ -60,30 +60,39 @@ export default function UpdateProduct() {
         }
     }
 
-    // const handleDelete = async (id) => {
-    //     try {
-    //         const { data } = await API.delete(`/products/${id}`)
-    //         console.log(data)
-    //         if (data.ok) {
-    //             socket.emit("delete-product", data.id)
-    //             setProducts(products.filter((product) => product.id !== id))
-    //         }
-    //     } catch (e) {
-    //         console.error(e.response.data)
-    //     }
-    // }
+    const handleCreate = async (e) => {
+        e.preventDefault()
+        try {
+            const { data } = await API.post(`/products`, {
+                name: name,
+                price: price,
+                stock: stock
+            })
+            console.log(data)
+            if (data.ok) {
+                socket.emit("create-product", {
+                    id: data.product.id,
+                    name: data.product.name,
+                    price: data.product.price,
+                    stock: data.product.stock
+                })
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
 
     return (
         <div className="flex flex-col items-center justify-center h-full">
-            <h1 className="text-2xl font-bold mb-4">Update Product</h1>
-            <form className="flex flex-col gap-4" onSubmit={handleUpdate}>
+            <h1 className="text-2xl font-bold mb-4">{isEditMode ? "Update Product" : "Create Product"}</h1>
+            <form className="flex flex-col gap-4" onSubmit={isEditMode ? handleUpdate : handleCreate}>
                 <label htmlFor="name">Name</label>
                 <input type="text" placeholder="Name" className="border border-gray-300 rounded-md p-2" value={name} onChange={(e) => setName(e.target.value)} />
                 <label htmlFor="price">Price</label>
                 <input type="number" placeholder="Price" className="border border-gray-300 rounded-md p-2" value={price} onChange={(e) => setPrice(e.target.value)} />
                 <label htmlFor="stock">Stock</label>
                 <input type="number" placeholder="Stock" className="border border-gray-300 rounded-md p-2" value={stock} onChange={(e) => setStock(e.target.value)} />
-                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer">Update</button>
+                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer">{isEditMode ? "Update" : "Create"}</button>
             </form>
         </div>
     )
