@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import API, { socket } from "../axios/url";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -14,6 +15,7 @@ export default function Products() {
     const [pageNumbers, setPageNumbers] = useState([])
     const [error, setError] = useState(null)
     const limit = 50
+    const navigate = useNavigate()
 
     useEffect(() => {
         console.log("products length", products.length)
@@ -22,7 +24,6 @@ export default function Products() {
 
     useEffect(() => {
         const handleConnect = () => {
-            console.log("Socket conectado:", socket.id)
             socket.emit("join-module", "products")
         }
 
@@ -45,10 +46,19 @@ export default function Products() {
             )
         }
 
+        const handleUpdate = ({ id, name, price, stock }) => {
+            console.log("product-updated", id)
+            setProducts(prev =>
+                prev.map(product => product.id === Number(id) ? { ...product, name, price, stock, updated_at: new Date() } : product)
+            )
+        }
+
         socket.on("product:deleted", handleDelete)
+        socket.on("product:updated", handleUpdate)
 
         return () => {
             socket.off("product:deleted", handleDelete)
+            socket.off("product:updated", handleUpdate)
         }
     }, [])
 
@@ -107,6 +117,7 @@ export default function Products() {
 
     const handleEdit = (id) => {
         console.log("edit", id)
+        navigate(`/update-product/${id}`)
     }
 
     const handleDelete = async (id) => {
@@ -124,9 +135,9 @@ export default function Products() {
 
     return (
         <div className='flex flex-col justify-center items-center w-full h-full'>
-            <h1 className='text-3xl font-bold underline'>Products</h1>
+            <h1 className='text-3xl font-bold underline mb-15 mt-10'>Products</h1>
             <main className="mb-15">
-                <div className="flex flex-wrap gap-2 overflow-y-auto h-full">
+                <div className="flex flex-wrap gap-2 overflow-y-auto h-full justify-center">
                     {
                         products.map((product) => (
                             <div className="flex whitespace-nowrap overflow-hidden flex-col gap-2 border border-gray-200 rounded-lg p-4 bg-gray-800/5 shadow-md hover:bg-gray-800/15 hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
